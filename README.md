@@ -193,10 +193,10 @@ c['a'].add_handler(set_func=lambda o,v:o.set(np.array(v),raw=True)
 #### FusedConfig.Item#get_func = function(_object_)
 Value conversion hook function when calling the FusedConfig.Item#get() method.
 
-+ _object_ : FusedConfig.Item object. The raw value is stored in _object_`._value`.
++ _object_ : FusedConfig.Item object. The raw value is stored in _object_.`_value`.
 
 #### FusedConfig.Item#set_func = function(_object_, _value_)
 Value conversion hook function when calling the FusedConfig.Item#set() method.
 
-+ _object_ : FusedConfig.Item object to store value. The converted value must be stored in `_object_._value`.
-+ _value_
++ _object_ : FusedConfig.Item object to store value. The converted value must be stored in _object_.`_value`.
++ _value_ : Value before conversion
