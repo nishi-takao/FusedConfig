@@ -155,7 +155,7 @@ class FusedConfig:
         def add_item(self,name,value=None,**props):
             return self._parent.add_item(name,value,**props)
         
-        def add_receiver(
+        def add_handler(
                 self,
                 envvar=None,
                 argvar=None,
@@ -167,7 +167,7 @@ class FusedConfig:
                ((argvar is not None) and (self._argvar is not None)) or \
                ((set_func is not None) and (self._set_func is not None)) or \
                ((get_func is not None) and (self._get_func is not None))):
-                return self._parent.add_receiver(
+                return self._parent.add_handler(
                     self,
                     envvar=envvar,
                     argvar=argvar,
@@ -245,10 +245,10 @@ class FusedConfig:
 
     ####################################################################
     #
-    # Command line argument/Env var. receiver without entity.
+    # Command line argument/Env var. handler without entity.
     # This class instances do NOT have own name and value.
     #
-    class Receiver(Item):
+    class Handler(Item):
         #
         #  dst : destination object for sending value
         #  envvar : environment variable associated with this item
@@ -303,11 +303,11 @@ class FusedConfig:
             else:
                 return self._dst.get(raw=raw)
 
-        def add_receiver(self,**props):
-            return self._parent.add_receiver(self._dst,**props)
+        def add_handler(self,**props):
+            return self._parent.add_handler(self._dst,**props)
 
     #
-    # end of FusedConfig.Receiver
+    # end of FusedConfig.Handler
     #
     ####################################################################
                 
@@ -435,8 +435,8 @@ class FusedConfig:
         item=self.__class__.Item(self,name,value,**props)
         return self._add_item(item)
     
-    def add_receiver(self,dst,**props):
-        item=self.__class__.Receiver(dst,**props)
+    def add_handler(self,dst,**props):
+        item=self.__class__.Handler(dst,**props)
         self._add_item(item)
         return dst
     
@@ -649,7 +649,7 @@ if(__name__=='__main__'):
     # section
     s=c.add_section('Hoge')
     s.add_item('num',0,argvar=['-n','--num'],type=int) # with cmd-line option
-    s.add_item('str','0').add_receiver(argvar=['-s','--str'])
+    s.add_item('str','0').add_handler(argvar=['-s','--str'])
     s.add_item('home',argvar=['--home'],envvar='HOME') # with env.var reference
     
     # yet another section
