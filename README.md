@@ -39,13 +39,13 @@ config.add_item('b',1,
 config.add_item('c',2)
 
 # Associations with items can be specified later.
-config['c'].add_receiver(i,argvar=['-c','--var-c'],type=int)
+config['c'].add_receiver(argvar=['-c','--var-c'],type=int)
 
-# By naming items with a leading underscore or specifying hidden=True,
+# By naming items with a leading underscore ('_') or specifying hidden=True,
 # you can create items that are not dumped to the dictionary.
 # This is useful when deploying configuration files.
 config.add_item('d','secret',hidden=True)
-config.add_item('_e','secret')
+config.add_item('_e','***')
 
 # Define section `Foo`.
 # Sections are useful when you want to separate namespaces.
@@ -93,14 +93,29 @@ config.parse(base_config_files='foo.json')
 
 ```
 
-### Referencing and Rewriting
+### Reading and Rewriting
 ```python
 
+# readign as properties
 config.a #=> 0
 config.b #=> 1
 
+# readign as dict
 config['c'] #=> <FusedConfig.Item object>
 config['c'].get() #=> 2 # same mean as config.c
+
+# You can also read hidden items.
+config.d #=> 'secret'
+
+# However, items whose names begin with an underscore '_' cannot
+# be read as properties.
+#
+# config._e #=> raise AttributeError
+#
+# You must retrieve the object in dict format
+# and use the get() method.
+config['_e'].get() #=> '***'
+
 
 config.Foo #=> <FusedConfig object>
 config.Foo.b #=> 'b'
