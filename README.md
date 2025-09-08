@@ -81,7 +81,7 @@ with open('foo.json') as f:
     config.load(f)
 
 # Apply environment variable
-config.from_os()
+config.from_env()
 
 # Build ArgumentParser and apply command-line options
 parser=config.to_optargs
