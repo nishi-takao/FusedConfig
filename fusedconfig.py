@@ -113,7 +113,7 @@ class FusedConfig:
 
         def set(self,value,*,raw=False):
             if(self._set_func and not raw):
-                self._set_func(self._value,value)
+                self._set_func(self,value)
             else:
                 self._value=value
             
@@ -121,7 +121,7 @@ class FusedConfig:
         
         def get(self,*,raw=False):
             if(self._get_func and not raw):
-                return self._get_func(self._value)
+                return self._get_func(self)
             else:
                 return self._value
             
