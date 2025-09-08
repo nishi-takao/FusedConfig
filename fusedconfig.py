@@ -52,14 +52,17 @@ class FusedConfig:
     #
     class Item:
         Argparse_Kargs=[
+            'option_strings',
             'dest',
+            'nargs',
+            'const',
             'default',
             'type',
-            'action',
             'choices',
-            'nargs',
             'help',
             'required',
+            'metavar',
+            'action',
         ]
 
         #
@@ -89,23 +92,28 @@ class FusedConfig:
             self._parent=parent
             self._name=name
             self._value=value
-            if((name is not None) and \
-               (value is None) and \
-               ('default' in props)):
-                    self.set(props['default'])
-            
             self._set_func=set_func
             self._get_func=get_func
             self._hidden=hidden
-            if((name is not None) and (hidden is None) and (name[0]=='_')):
-                self._hidden=True
-            
-            self._envvar=envvar
+            self._envvar=None
             self._argvar=None
             self._destname=None
             self._props=None
-            self._set_argprops(argvar,props)
-
+            
+            self._set_envprops(envvar,props)
+            self._set_argprops(argvar,None)
+            
+            if(name is not None):
+                if(value is None):
+                    if('default' in props):
+                        self.set(props['default'])
+                    elif('const' in props):
+                        self.set(props['const'])
+                
+                if((hidden is None) and (name[0]=='_')):
+                    self._hidden=True
+            
+            
         def set(self,value,*,raw=False):
             if(self._set_func and not raw):
                 self._set_func(self,value)
@@ -148,7 +156,12 @@ class FusedConfig:
             if(self._envvar is None):
                 return None
             if(self._envvar in env):
-                return self.set(env[self._envvar])
+                v=env[self._envvar]
+                if(('type' in self._props) and \
+                   self._props['type'] is not None)):
+                    v=self._props['type'](v)
+                
+                return self.set(v)
             
             return None
         
@@ -177,7 +190,7 @@ class FusedConfig:
                 )
             
             if(envvar is not None):
-                self._envvar=envvar
+                self._set_envprops(envvar,props)
             if(argvar is not None):
                 self._set_argprops(argvar,props)
             if(set_func is not None):
@@ -187,6 +200,18 @@ class FusedConfig:
             
             return self
         
+        def _set_envprops(self,envvar,props):
+            self._envvar=envvar
+            if(props is not None):
+                if(('type' in props) and \
+                   (props['type'] is not None) and \
+                   (not callable(props['type'])):
+                   raise ValueError(
+                       'unknown type "%s"' % (props['type'].__name__)
+                   )
+                
+                self._props=props
+        
         def _set_argprops(self,argvar,props):
             self._argvar=argvar
             self._destname=None
@@ -195,8 +220,9 @@ class FusedConfig:
                     self._argvar=[self._argvar]
                 self._destname=self._build_destname(*self._argvar,**props)
             
-            self._props=props
-
+            if(props is not None):
+                self._props=props
+        
         #
         # copied from argparse.py
         # _ActionsContainer#_get_optional_kwargs()
@@ -337,12 +363,11 @@ class FusedConfig:
         )
 
     def __setattr__(self,name,value):
-        # I know I'm using black magic
-        locals_=inspect.stack()[1].frame.f_locals
-        
         #
         # When this method is calling from outside
         #
+        # I know I'm using black magic
+        locals_=inspect.stack()[1].frame.f_locals
         if(('self' not in locals_) or (locals_['self']!=self)):
             #
             # case of the item
