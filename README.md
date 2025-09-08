@@ -152,7 +152,6 @@ In the case above, specifying `get_func` as follows enables type conversion duri
 
 c=FusedConfig()
 c.add_item('a',a,get_func=lambda o:o._value.tolist())
-c.add_item('a',a)
 c.to_dict() #=> {'a': [0.0, 1.0, 2.0, 3.0]}
 json.dumps(c.to_dict()) #=> '{"a": [0.0, 1.0, 2.0, 3.0]}'
 ```
@@ -187,7 +186,7 @@ get_func/set_func can be added after the item definition using the add_handler()
 c=FusedConfig()
 c.add_item('a')
 c['a'].add_handler(get_func=lambda o:o._value.tolist())
-c['a'].add_handler(set_func=lambda o,v:o.set(np.array(v),raw=True)
+c['a'].add_handler(set_func=lambda o,v:o.set(np.array(v),raw=True))
 ```
 
 #### FusedConfig.Item#get_func = function(_object_)
