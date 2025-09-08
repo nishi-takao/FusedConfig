@@ -20,10 +20,10 @@
        this list of conditions and the following disclaimer in the documentation
        and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
+    THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDER ''AS IS'' AND ANY
     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+    DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -393,14 +393,6 @@ class FusedConfig:
                     UserWarning,
                     stacklevel=2
                 )
-    
-    def get_entry(self,name):
-        if(name in self._items):
-            return self._items[name]
-        elif(name in self._sections):
-            return self._sections[name]
-        
-        raise KeyError(name)
     
     def add_item(self,name,value=None,**props):
         item=self.__class__.Item(self,name,value,**props)
