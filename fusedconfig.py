@@ -521,19 +521,26 @@ class FusedConfig:
         )
         return self
 
+    #
+    # base_config_files : Configuration files to load initially
+    # skip_env : When set to True, skip applying environment variables
+    # skip_optparse : When set to True, skip applying command-line options
+    # opt_file_arg : Command-line option name for specifying the config file
+    # opt_args : Option strings for ArgumentParser#parse_args()
+    #
     def parse(
             self,
             *,
-            default_config_files=None,
+            base_config_files=None,
             skip_env=False,
             skip_optparse=False,
-            optparse_config_opt=['--config-file'],
+            opt_file_arg=['--config-file'],
             opt_args=None
     ):
-        if(default_config_files is not None):
-            if(not isinstance(init_config_files,(list,tuple))):
-                init_config_files=[init_config_files]
-            for f in init_config_files:
+        if(base_config_files is not None):
+            if(not isinstance(base_config_files,(list,tuple))):
+                base_config_files=[base_config_files]
+            for f in base_config_files:
                 if(os.path.exists(f)):
                     try:
                         with open(f) as fp:
@@ -545,11 +552,11 @@ class FusedConfig:
         if(not skip_optparse):
             parser=self.to_optargs()
             cf_attr=None
-            if(optparse_config_opt):
-                if(not isinstance(optparse_config_opt,(list,tuple))):
-                    optparse_config_opt=[optparse_config_opt]
+            if(opt_file_arg):
+                if(not isinstance(opt_file_arg,(list,tuple))):
+                    opt_file_arg=[opt_file_arg]
                 cf_attr=parser.add_argument(
-                    *optparse_config_opt,
+                    *opt_file_arg,
                     help='path to configration file'
                 ).dest
             opt=parser.parse_args(opt_args)
@@ -677,7 +684,7 @@ if(__name__=='__main__'):
     
     # apply env.vars. and command-line options
     c.parse(
-        default_config_files=None,
+        base_config_files=None,
         opt_args=['-n','3']
     )
 
