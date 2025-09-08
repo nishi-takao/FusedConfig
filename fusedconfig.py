@@ -103,13 +103,8 @@ class FusedConfig:
             self._envvar=envvar
             self._argvar=None
             self._destname=None
-            if(argvar is not None):
-                self._argvar=argvar
-                if(not isinstance(self._argvar,(list,tuple))):
-                    self._argvar=[self._argvar]
-                self._destname=self._build_destname(*self._argvar,**props)
-                
-            self._props=props
+            self._props=None
+            self._set_argprops(argvar,props)
 
         def set(self,value,*,raw=False):
             if(self._set_func and not raw):
@@ -160,9 +155,48 @@ class FusedConfig:
         def add_item(self,name,value=None,**props):
             return self._parent.add_item(name,value,**props)
         
-        def add_receiver(self,**props):
-            return self._parent.add_receiver(self,**props)
-                           
+        def add_receiver(
+                self,
+                envvar=None,
+                argvar=None,
+                set_func=None,
+                get_func=None,
+                **props
+        ):
+            if(((envvar is not None) and (self._envvar is not None)) or \
+               ((argvar is not None) and (self._argvar is not None)) or \
+               ((set_func is not None) and (self._set_func is not None)) or \
+               ((get_func is not None) and (self._get_func is not None))):
+                return self._parent.add_receiver(
+                    self,
+                    envvar=envvar,
+                    argvar=argvar,
+                    set_func=set_func,
+                    get_func=get_func,
+                    **props
+                )
+            
+            if(envvar is not None):
+                self._envvar=envvar
+            if(argvar is not None):
+                self._set_argprops(argvar,props)
+            if(set_func is not None):
+                self._set_func=set_func
+            if(get_func is not None):
+                self._get_func=get_func
+            
+            return self
+        
+        def _set_argprops(self,argvar,props):
+            self._argvar=argvar
+            self._destname=None
+            if(self._argvar is not None):
+                if(not isinstance(self._argvar,(list,tuple))):
+                    self._argvar=[self._argvar]
+                self._destname=self._build_destname(*self._argvar,**props)
+            
+            self._props=props
+
         #
         # copied from argparse.py
         # _ActionsContainer#_get_optional_kwargs()
@@ -221,7 +255,6 @@ class FusedConfig:
         #  argvar : command line options associated with this item
         #  set_func : function(obj,value) for writing value to obj
         #  get_func : function(obj) for reading value from obj
-        #  hidden : when set True, this item will not dump to dict
         #  and other kwargs for ArgumentParser#add_argument()
         #
         def __init__(
@@ -232,11 +265,16 @@ class FusedConfig:
             argvar=None,
             set_func=None,
             get_func=None,
-            hidden=None,
             **props
         ):
-            if((envvar is None) and (argvar is None)):
-                raise KeyError('argvar or envvar keyword is required')
+            if((envvar is None) and \
+               (argvar is None) and \
+               (set_func is None) and \
+               (get_func is None)):
+                raise TypeError(
+                    'One or more of the keywords argvar, '
+                    'envvar, set_func, or get_func is required.'
+                )
             
             self._dst=dst
             super().__init__(
@@ -247,7 +285,6 @@ class FusedConfig:
                 argvar=argvar,
                 set_func=set_func,
                 get_func=get_func,
-                hidden=hidden,
                 **props
             )
             
