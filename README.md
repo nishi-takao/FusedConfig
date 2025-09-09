@@ -179,36 +179,24 @@ d #=> {'a': [0.0, 1.0, 2.0, 3.0]}
 c.from_dict(d)
 c.a #=> [0.0, 1.0, 2.0, 3.0]
 
-
-c=FusedConfig()
-c.add_item('a',np.array([0.0,1,2,3]),
-    # Note that to avoid SyntaxErrors, we use `Item#set(value, raw=True)`
-    # instead of assignment within lambda expressions.
-    set_func=lambda o,v:o.set(np.array(v),raw=True),
-
-    get_func=lambda o:o._value.tolist()
-)
+#
+# add set_func handler using Item#add_handler()
+#
+# Note that to avoid SyntaxErrors, we use `Item#set(value, raw=True)`
+# instead of assignment within lambda expressions.
+#
+c['a'].add_handler(set_func=lambda o,v:o.set(np.array(v),raw=True))
 
 c.from_dict(d)
 c.a #=> array([0., 1., 2., 3.])
 ```
 
-get_func/set_func can be added after the item definition using the add_handler() method, just like environment variables and command-line options handler.
-
-```python
-
-c=FusedConfig()
-c.add_item('a')
-c['a'].add_handler(get_func=lambda o:o._value.tolist())
-c['a'].add_handler(set_func=lambda o,v:o.set(np.array(v),raw=True))
-```
-
-#### FusedConfig.Item#get_func = function(_object_)
+#### FusedConfig.Item#get_func = callable(_object_) -> object
 Value conversion hook function when calling the FusedConfig.Item#get() method.
 
 + _object_ : FusedConfig.Item object. The raw value is stored in _object_.`_value`.
 
-#### FusedConfig.Item#set_func = function(_object_, _value_)
+#### FusedConfig.Item#set_func = callable(_object_, _value_) -> None
 Value conversion hook function when calling the FusedConfig.Item#set() method.
 
 + _object_ : FusedConfig.Item object to store value. The converted value must be stored in _object_.`_value`.
