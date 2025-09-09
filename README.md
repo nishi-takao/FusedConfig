@@ -59,15 +59,29 @@ sec.add_item('f',0)
 # However, the environment variables and command-line options associated
 # with it must have unique names across all sections.
 sec.add_item('b','b',
-    argvar=['--var-a-b'], # Can not use `--var-b`
+    argvar=['--Foo-b'], # Can not use `--var-b`
     type=str
 )
 
 ```
 
-### Saving
+### Exporting/Saving
 ```python
 
+# export as dict
+config.to_dict() #=> {'a': 0, 'b': 1, 'c': 2, 'Foo': {'f': 0, 'b': 'b'}}
+
+#
+# export as dict with hidden items
+#
+# Note that items with names starting with an underscore '_'
+# will never be exported, regardless of the "with_hidden_items=True".
+#
+config.to_dict(
+    with_hidden_items=True
+) #=> {'a': 0, 'b': 1, 'c': 2, 'd': 'secret', 'Foo': {'f': 0, 'b': 'b'}}
+
+# save in JSON format
 with open('foo.json','w') as f:
     config.save(f)
 ```
@@ -138,10 +152,8 @@ from fusedconfig import *
 import numpy as np
 import json
 
-a=np.array([0.0,1,2,3])
-
 c=FusedConfig()
-c.add_item('a',a)
+c.add_item('a',np.array([0.0,1,2,3]))
 c.to_dict() #=> {'a': array([0., 1., 2., 3.])}
 json.dumps(c.to_dict()) #=> TypeError
 ```
@@ -151,7 +163,9 @@ In the case above, specifying `get_func` as follows enables type conversion duri
 ```python
 
 c=FusedConfig()
-c.add_item('a',a,get_func=lambda o:o._value.tolist())
+c.add_item('a',np.array([0.0,1,2,3]),
+    get_func=lambda o:o._value.tolist()
+)
 c.to_dict() #=> {'a': [0.0, 1.0, 2.0, 3.0]}
 json.dumps(c.to_dict()) #=> '{"a": [0.0, 1.0, 2.0, 3.0]}'
 ```
@@ -167,12 +181,12 @@ c.a #=> [0.0, 1.0, 2.0, 3.0]
 
 
 c=FusedConfig()
-c.add_item('a',a,
-    get_func=lambda o:o._value.tolist(),
-
+c.add_item('a',np.array([0.0,1,2,3]),
     # Note that to avoid SyntaxErrors, we use `Item#set(value, raw=True)`
     # instead of assignment within lambda expressions.
-    set_func=lambda o,v:o.set(np.array(v),raw=True)
+    set_func=lambda o,v:o.set(np.array(v),raw=True),
+
+    get_func=lambda o:o._value.tolist()
 )
 
 c.from_dict(d)

@@ -158,7 +158,7 @@ class FusedConfig:
             if(self._envvar in env):
                 v=env[self._envvar]
                 if(('type' in self._props) and \
-                   self._props['type'] is not None)):
+                   (self._props['type'] is not None)):
                     v=self._props['type'](v)
                 
                 return self.set(v)
@@ -177,9 +177,7 @@ class FusedConfig:
                 **props
         ):
             if(((envvar is not None) and (self._envvar is not None)) or \
-               ((argvar is not None) and (self._argvar is not None)) or \
-               ((set_func is not None) and (self._set_func is not None)) or \
-               ((get_func is not None) and (self._get_func is not None))):
+               ((argvar is not None) and (self._argvar is not None))):
                 return self._parent.add_handler(
                     self,
                     envvar=envvar,
@@ -194,8 +192,12 @@ class FusedConfig:
             if(argvar is not None):
                 self._set_argprops(argvar,props)
             if(set_func is not None):
+                if(self._set_func is not None):
+                    raise RuntimeError('set_func is already defined.')
                 self._set_func=set_func
             if(get_func is not None):
+                if(self._get_func is not None):
+                    raise RuntimeError('get_func is already defined.')
                 self._get_func=get_func
             
             return self
@@ -205,7 +207,7 @@ class FusedConfig:
             if(props is not None):
                 if(('type' in props) and \
                    (props['type'] is not None) and \
-                   (not callable(props['type'])):
+                   (not callable(props['type']))):
                    raise ValueError(
                        'unknown type "%s"' % (props['type'].__name__)
                    )
@@ -215,13 +217,15 @@ class FusedConfig:
         def _set_argprops(self,argvar,props):
             self._argvar=argvar
             self._destname=None
+            if(props is None):
+                props={}
+            else:
+                self._props=props
+                
             if(self._argvar is not None):
                 if(not isinstance(self._argvar,(list,tuple))):
                     self._argvar=[self._argvar]
                 self._destname=self._build_destname(*self._argvar,**props)
-            
-            if(props is not None):
-                self._props=props
         
         #
         # copied from argparse.py
@@ -293,13 +297,9 @@ class FusedConfig:
             get_func=None,
             **props
         ):
-            if((envvar is None) and \
-               (argvar is None) and \
-               (set_func is None) and \
-               (get_func is None)):
+            if((envvar is None) and (argvar is None)):
                 raise TypeError(
-                    'One or more of the keywords argvar, '
-                    'envvar, set_func, or get_func is required.'
+                    'The kwarg argvar or envvar is required.'
                 )
             
             self._dst=dst
